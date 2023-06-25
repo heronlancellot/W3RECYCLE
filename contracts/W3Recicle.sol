@@ -260,7 +260,7 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
         require(sent, "Failed to send ETH");
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public virtual override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyRole(DEFAULT_ADMIN_ROLE) {
         setApprovalForAll(to, true);
         _transfer(from, to, tokenId);
 
@@ -317,7 +317,7 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, AccessControl)
+        override(AccessControl, ERC721, ERC721URIStorage)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
@@ -327,7 +327,7 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
