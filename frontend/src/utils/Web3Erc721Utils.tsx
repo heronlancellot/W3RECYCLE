@@ -1,7 +1,7 @@
 import { useState, useEffect, SetStateAction } from 'react';
 import { useContract, useContractRead, useFeeData, useSigner, useAccount, useContractWrite, usePrepareContractWrite, useNetwork } from 'wagmi';
 import type { Address } from 'wagmi'
-import NftERC721Artifact from "src/contracts/NftERC721.json";
+import W3Recicle from "src/contracts/W3Recicle.json";
 import contractAddress from "src/contracts/contract-W3Recicle-address.json";
 import { NftOrder } from 'src/models/nft_order';
 import { useIpfsUploader } from "src/utils/IpfsUtils"
@@ -25,7 +25,7 @@ const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 const contract = new ethers.Contract(
   contractAddress.W3Recicle,
-  NftERC721Artifact.abi,
+  W3Recicle.abi,
   provider.getSigner()
 );
 
@@ -57,6 +57,18 @@ export function useProduct() {
     if (contract != null) {
       try {          
         await contract.registerProduct(deviceType, model, fabricant, image, ethers.utils.parseEther(price));
+        console.log("FINALIZOU O SAVE PRODUCT")
+      } catch (error) {
+        console.log("errors", error);
+        return;
+      }       
+    }
+  }
+
+  async function getProduct(index: number): Promise<void> {
+    if (contract != null) {
+      try {          
+        const productResponse = await contract.getProduct(index);
         console.log("FINALIZOU O SAVE PRODUCT")
       } catch (error) {
         console.log("errors", error);

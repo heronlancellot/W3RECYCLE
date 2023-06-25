@@ -14,7 +14,7 @@ import { useMintToken, useProduct } from "src/utils/Web3Erc721Utils"
 import { useDateFormatter } from 'src/utils/DateUtils';
 import { useSigner } from 'wagmi';
 import UserProfile from 'src/components/User/UserProfile';
-import { Alert, CardActionsWrapper, CardCover, CardCoverAction } from '../StyleImports';
+import { Alert, CardActionsWrapper, CardCover, CardCoverAction } from './StyleImports';
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void;

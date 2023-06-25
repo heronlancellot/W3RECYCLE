@@ -11,16 +11,17 @@ import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import contractAddress from "src/contracts/contract-nfterc721-address.json";
+import { Alert, CardActionsWrapper, CardCover, CardCoverAction } from '../StyleImports';
 
-const ProductFabricant = [
+const Devices = [
   {
-    value: '1', label: 'Apple'
+    value: '1', label: 'Galaxy S10+ (2019)'
   },
   {
-    value: '2', label: 'Samsung',
+    value: '2', label: 'iPhone 11 Pro Max (2019)',
   },
   {
-    value: '3', label: 'Motorolla'
+    value: '3', label: 'Motorola Edge Plus (2020)'
   }
   ];
   
@@ -71,6 +72,32 @@ function ProductRegister() {
     nft.mei = event.target.value;
   };
 
+  
+  const onSubmit = async (event: { preventDefault: () => void; }) => {
+    console.log("ENTROU NO SUBMIT")
+    nft.attributes = [...nft.attributes, {
+      trait_type: 'Model',
+      value: model
+    }];
+
+    nft.attributes = [...nft.attributes, {
+      trait_type: 'Device Type',
+      value: "deviceType"
+    }];
+
+
+    //guarda metadata no ipfs e realiza o mint
+    try {
+      //const ipfsJsonResult = await uploadJsonToPinata(JSON.stringify(nft), "tokenUri.json");
+      //setUploadJsonResult(ipfsJsonResult);
+      //mintNft(ipfsJsonResult.IpfsHash, process.env.REACT_APP_DAPP_CONTRACT);
+      //setOpenInformartion(true);
+    } catch (error) {
+      console.log("Erro: ", error);
+    }
+  };
+
+
   async function loadData() {
     setLoading(true);
     loadNft(tokenId);
@@ -98,81 +125,73 @@ function ProductRegister() {
           alignItems='center'
           spacing={2}
         >
+          <Card>
+                  <CardHeader title="Cadastre seu Eletroeletrônico" />
+                  <Box
+                    component="form"
+                    sx={{
+                      '& .MuiTextField-root': { m: 1 }
+                    }}
+                    onSubmit={handleSubmit(onSubmit)}
+                  >
+                    <Box
+                        sx={{
+                          '& .MuiTextField-root': { m: 1 }
+                        }}
+                      >
 
-<Box
-              sx={{
-                '& .MuiTextField-root': { m: 1 }
-              }}
-            >
-              <div>
-                <TextField fullWidth {...register("Fabricante")}
-                  id="outlined-required"
-                  select
-                  label='Fabricante'
-                  value={product}
-                  onChange={handleChangeFabricant}
-                  SelectProps={{
-                    native: true
-                  }}
-                >    
-                 {ProductFabricant.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}         
-                  </TextField> 
+                        <div>
+                          <TextField fullWidth 
+                            id="outlined-required"
+                            select
+                            label="Modelo do dispositivo"
+                            value={product}
+                            onChange={handleChangeModel}
+                            disabled={data && data.tokenId >= 0 ? true : false}
+                            SelectProps={{
+                              native: true
+                            }}
+                          >    
+                          {Devices.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}         
+                            </TextField> 
 
-            
-              </div>
-
-              <div>
-                <TextField fullWidth {...register("Tipo de Produto")}
-                  id="outlined-required"
-                  select
-                  label="Tipo de Produto"
-                  value={product}
-                  onChange={handleChangeFabricant}
-                  disabled={data && data.tokenId >= 0 ? true : false}
-                  SelectProps={{
-                    native: true
-                  }}
-                >    
-                 {ProductFabricant.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}         
-                  </TextField> 
-
-            
-              </div>
-
-              <div>
-                <TextField fullWidth {...register("model")}
-                  id="outlined-required"
-                  label={data && data.name ? '' : 'Modelo do Dispositivo'}
-                  onChange={handleChangeModel}
-                  placeholder={data && data.name ? '' : 'Ex: 5S'}
-                  disabled={data && data.tokenId >= 0 ? true : false}
-                  value={data && data.name}
-                />
-                <p>{errors.title?.message}</p>
-              </div>
-
-
-              
-              <div> 
-              <TextField fullWidth {...register("EMEI")}
-                  id="outlined-required"
-                  label={data && data.name ? '' : 'EMEI'}
-                  onChange={handleChangeEMEI}
-                  placeholder={data && data.name ? '' : 'Ex: ESP240623'}
-                  disabled={data && data.tokenId >= 0 ? true : false}
-                  value={data && data.name}
-                />
-                <p>{errors.title?.message}</p>
-              </div>
-            </Box>
+                      
+                        </div>
+                        
+                        <div> 
+                        <TextField fullWidth {...register("EMEI")}
+                            id="outlined-required"
+                            label={data && data.name ? '' : 'EMEI'}
+                            onChange={handleChangeEMEI}
+                            placeholder={data && data.name ? '' : 'Ex: ESP240623'}
+                            disabled={data && data.tokenId >= 0 ? true : false}
+                            value={data && data.name}
+                          />
+                          <p>{errors.title?.message}</p>
+                        </div>
+                      </Box>
+                      
+                      <CardActionsWrapper
+                        sx={{
+                          display: { xs: 'block', md: 'flex' },
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <Box>
+                        </Box>
+                        <Box sx={{ mt: { xs: 2, md: 0 } }}>
+                          <Button type="submit" variant="contained">
+                            Registrar Dispositivo
+                          </Button>
+                        </Box>
+                      </CardActionsWrapper>
+                  </Box>
+          </Card>
               
               
         </Grid>
