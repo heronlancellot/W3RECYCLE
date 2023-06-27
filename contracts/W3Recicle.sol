@@ -5,24 +5,23 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 import {ECDSA} from  "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
+struct Product {   
+    uint256 productId;
+    string deviceType; 
+    string model;
+    string image; // HASH  IPFS da imagem 
+    string fabricant;
+    uint256 price; // Preco da taxa do Produto ( Valor líquido de quanto o Ponto de Coleta paga)
+}
 
 contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
 
     // 3 ACESS ROLES -> Consumidor | Ponto de Coleta | Administrador     // ADMIN criado ao deployar contrato
     bytes32 public constant CONSUMER_ROLE = keccak256("CONSUMER_ROLE");  // LEADER_ROLE no contrato original
     bytes32 public constant COLLECTPOINT_ROLE = keccak256("COLLECTPOINT_ROLE");  // MEMBER_ROLE no contrato original
-
-    // Produtos --> ADMIN
-    struct Product {   
-
-        string deviceType; 
-        string model;
-        string image; // HASH  IPFS da imagem 
-        string fabricant;
-        uint256 price; // Preco da taxa do Produto ( Valor líquido de quanto o Ponto de Coleta paga)
-
-    }
 
     struct CollectPoint { 
 
@@ -50,13 +49,36 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
 
     // 1 - Cadastro do produto - administrador
 
-    function registerProduct(string memory deviceType, string memory model, string memory image, string memory fabricant, uint256 price) public onlyRole(DEFAULT_ADMIN_ROLE){
-        Product memory product = Product(deviceType, model, image, fabricant, price);
+    function registerProduct(string memory deviceType, string memory model, string memory fabricant, string memory image, uint256 price) public onlyRole(DEFAULT_ADMIN_ROLE) returns (uint256){
         uint256 productId = productIdCounter.current(); // Pega o ID atual do produto
+        Product memory product = Product(productId, deviceType, model, image, fabricant, price);        
         _products[productId] = product; // Atribui o ID ao Produto
-        productIdCounter.increment(); // Incrementa ID
+        productIdCounter.increment(); // Incrementa ID        
+        return productId;
     }
 
+    function getProducts() public view returns(string memory) {
+        string memory output="[";
+        for (uint i = 0; i < productIdCounter.current()-1; i++) {
+            output = Base64.encode(
+            bytes(
+                string.concat(output,
+                    string(
+                        abi.encodePacked(
+                            "{'deviceType': '", _products[i].deviceType, "',",
+                            "'model': '", _products[i].model, "',",
+                            "'image': '", _products[i].image, "',",
+                            "'fabricant': '", _products[i].fabricant, "',",
+                            "'price': '", _products[i].price, "',",
+                            "},"                        
+                        )
+                    )
+                )
+            )
+        );
+        }
+        return string.concat(output, "]");
+    }
 
     // Realiza um mapping que vincula o ID do dispositivo - temos o ID do dispositivo que está vinculado ao Device que tem o Owner
     mapping(uint256  => Device ) public _devices;
@@ -77,12 +99,6 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
         string status;
         string tokenUri;
         uint256 reward;
-    }
-
-    struct ApprovementInfo {
-        uint256 tokenId;   
-        uint256 amount;
-        address to;
     }
 
     string constant private MSG_PREFIX = "\x19Ethereum Signed Message:\n32";
@@ -122,49 +138,6 @@ contract W3Recicle is ERC721, ERC721URIStorage, AccessControl, IERC721Receiver {
     }
 
     receive() external payable {}
-
-    /**
-     * encode struct -> encodePacked with nonce -> digest 
-     *   -> append ETH signed msg -> digest Out
-     */
-    function approveActivity(address from, ApprovementInfo calldata _txn, uint256 _nonce, bytes[] calldata _multiSignature) external nonReentrant
-    {
-        _verifyMultiSignature(_txn, _nonce, _multiSignature);
-        transferNFTWithETH(from, _txn.to, _txn.tokenId);
-        //_transferETH(_txn);
-    }
-
-    function _verifyMultiSignature(ApprovementInfo calldata _txn, uint256 _nonce, bytes[] calldata _multiSignature) private
-    {
-        require(_nonce > nonce, "nonce already used");
-        uint256 count = _multiSignature.length;
-        require(count >= _threshold, "not enough signers");
-        bytes32 digest = _processApprovementInfo(_txn, _nonce);
-
-        address initSignerAddress; 
-        for (uint256 i = 0; i < count; i++)
-        {
-            bytes memory signature = _multiSignature[i];
-            address signerAddress = ECDSA.recover(digest, signature );
-            require( signerAddress > initSignerAddress, "possible duplicate" );
-            require(_isValidSigner[signerAddress], "not part of consortium");
-            initSignerAddress = signerAddress;
-        }
-        nonce = _nonce;
-    }
-
-    function _processApprovementInfo(ApprovementInfo calldata _txn, uint256 _nonce) private pure returns(bytes32 _digest)
-    {
-        bytes memory encoded = abi.encode( _txn);
-        _digest = keccak256(abi.encodePacked(encoded, _nonce));
-        _digest = keccak256(abi.encodePacked(MSG_PREFIX, _digest));
-    }
-
-    function _transferETH (ApprovementInfo calldata _txn) private
-    {
-        (bool success, ) = payable(_txn.to).call{value: _txn.amount }("");
-        require(success, "Transfer not fulfilled");
-    }
 
     function grantRole(bytes32 role, address account) public virtual override onlyRole(getRoleAdmin(DEFAULT_ADMIN_ROLE)) {
         if (role == CONSUMER_ROLE)

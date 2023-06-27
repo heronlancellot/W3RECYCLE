@@ -135,8 +135,8 @@ function ProductTab({ data }) {
     try {
       const ipfsImageResult = await uploadFileToPinata(imageFile);
       setUploadFileResult(ipfsImageResult);
-      nft.image = ipfsImageResult.IpfsHash.toString();
-      console.log("ipfsImageResult", ipfsImageResult);
+      //nft.image = ipfsImageResult.IpfsHash.toString();
+     // console.log("ipfsImageResult", ipfsImageResult);
     } catch (error) {
       setOpenError(true);
       console.log("Erro: ", error);
@@ -144,10 +144,10 @@ function ProductTab({ data }) {
 
     //guarda metadata no ipfs e realiza o mint
     try {
-      const ipfsJsonResult = await uploadJsonToPinata(JSON.stringify(nft), "tokenUri.json");
-      setUploadJsonResult(ipfsJsonResult);
+      //const ipfsJsonResult = await uploadJsonToPinata(JSON.stringify(nft), "tokenUri.json");
+      //setUploadJsonResult(ipfsJsonResult);
       //mintNft(ipfsJsonResult.IpfsHash, process.env.REACT_APP_DAPP_CONTRACT);
-      createProduct(deviceType, model, fabricant, ipfsJsonResult.IpfsHash.toString(), "10");
+      createProduct(deviceType, model, fabricant, uploadFileResult.IpfsHash.toString(), "10");
       setOpenInformartion(true);
     } catch (error) {
       console.log("Erro: ", error);

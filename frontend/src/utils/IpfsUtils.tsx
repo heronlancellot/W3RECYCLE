@@ -3,9 +3,14 @@ import axios from 'axios';
 
 import { create } from 'ipfs-http-client';
 import { Buffer } from 'buffer';
+import { string } from 'prop-types';
 
 export function useIpfsUploader() {
-  const [uploadFileResult, setUploadFileResult] = useState({});
+  const [uploadFileResult, setUploadFileResult] = useState<{ IpfsHash: {}; PinSize: number; Timestamp: string }>({
+    IpfsHash: {},
+    PinSize: 0,
+    Timestamp: ""
+});
   const [uploadJsonResult, setUploadJsonResult] = useState({});
 
   async function uploadToInfura(

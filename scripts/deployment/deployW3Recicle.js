@@ -25,7 +25,7 @@ async function deployW3Recicle() {
 
     await w3r.grantRole(DEFAULT_ADMIN_ROLE, "0x289d4092FE8afdB0a9d2d7994219610D208F19d9");
 
-    await w3r.grantRole(CONSUMER_ROLE, "0x289d4092FE8afdB0a9d2d7994219610D208F19d9");
+    //await w3r.grantRole(CONSUMER_ROLE, "0x289d4092FE8afdB0a9d2d7994219610D208F19d9");
     // console.log('New role CONSUMER_ROLE to adress 0x289d4092FE8afdB0a9d2d7994219610D208F19d9', CONSUMER_ROLE);
     await w3r.grantRole(CONSUMER_ROLE, "0x608AbF4328F82Ef053EB1ee73feFA56518F73059");
     // console.log('New role CONSUMER_ROLE to adress 0x608AbF4328F82Ef053EB1ee73feFA56518F73059', CONSUMER_ROLE);
@@ -43,7 +43,7 @@ async function deployW3Recicle() {
     
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         await run("verify:verify", {
-            address: erc721.address
+            address: w3r.address
         })
     }
 
