@@ -3,6 +3,9 @@
   "license": "MIT",
   "version": "2.0.0",
   "description": "A repo for boilerplate code for testing, deploying, and shipping chainlink solidity code.",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test test/unit/*.spec.js",

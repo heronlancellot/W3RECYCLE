@@ -7,6 +7,9 @@
     "name": "BloomUI.com",
     "url": "https://bloomui.com"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "private": false,
   "dependencies": {
     "@emotion/react": "11.9.0",

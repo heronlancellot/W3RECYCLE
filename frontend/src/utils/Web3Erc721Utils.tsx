@@ -21,13 +21,16 @@ import { arDZ } from 'date-fns/locale';
 
 const ipfsGateway = process.env.REACT_APP_IPFS_GATEWAY;
 
-const provider = new ethers.providers.Web3Provider(window.ethereum);  
+const hasInjectedWallet =
+  typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
 
-const contract = new ethers.Contract(
-  contractAddress.W3Recicle,
-  W3Recicle.abi,
-  provider.getSigner()
-);
+const provider = hasInjectedWallet
+  ? new ethers.providers.Web3Provider((window as any).ethereum)
+  : null;
+
+const contract = provider
+  ? new ethers.Contract(contractAddress.W3Recicle, W3Recicle.abi, provider.getSigner())
+  : null;
 
 export function useMintToken(uploadJsonResult) {
   const [loading, setLoading] = useState(false);
