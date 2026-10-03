@@ -12,7 +12,11 @@ function WarrantyDetails() {
   const { data, loading, setLoading, loadNft } = useContractLoadTokenId();
   const {tokenId} = useParams();
   console.log('tokenId = ', tokenId);
-  const provider = new ethers.providers.Web3Provider(window.ethereum); 
+  const hasInjectedWallet =
+    typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
+  const provider = hasInjectedWallet
+    ? new ethers.providers.Web3Provider((window as any).ethereum)
+    : null;
   async function loadData() {
     setLoading(true);
     loadNft(tokenId);
@@ -42,7 +46,13 @@ function WarrantyDetails() {
         >
 
               <Grid item xs={12} md={12} >
-                <ActivityDetailsNft data={data} loading={loading} tokenId={tokenId} contractAddress={contractAddress.NftERC721} signer={provider.getSigner()}/>
+                <ActivityDetailsNft
+                  data={data}
+                  loading={loading}
+                  tokenId={tokenId}
+                  contractAddress={contractAddress.NftERC721}
+                  signer={provider?.getSigner()}
+                />
               </Grid>    
               
         </Grid>

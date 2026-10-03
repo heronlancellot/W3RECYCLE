@@ -13,7 +13,11 @@ const textDialog = 'Tem certeza que deseja completar a atividade ?'
 export default function CompleteActivityNft({ user, data, loading, tokenId }) {
 
   const [buttonState, setButtonState] = useState(false);
-  const provider = new ethers.providers.Web3Provider(window.ethereum); 
+  const hasInjectedWallet =
+    typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
+  const provider = hasInjectedWallet
+    ? new ethers.providers.Web3Provider((window as any).ethereum)
+    : null;
 
   function handleButtonClick() {
     setButtonState(true);
@@ -24,7 +28,13 @@ export default function CompleteActivityNft({ user, data, loading, tokenId }) {
     <>
       <UserHeader user={user}/>
       <AlertDialog textButton={textButton} textDialog={textDialog} textAlertDialog={textAlertDialog} handleButtonClick={handleButtonClick} buttonState={buttonState}/>
-      <DetailsNft data={data} loading={loading} tokenId={tokenId} contractAddress={contractAddress.NftERC721} signer={provider.getSigner()}/>
+      <DetailsNft
+        data={data}
+        loading={loading}
+        tokenId={tokenId}
+        contractAddress={contractAddress.NftERC721}
+        signer={provider?.getSigner()}
+      />
     </>
   );
 }

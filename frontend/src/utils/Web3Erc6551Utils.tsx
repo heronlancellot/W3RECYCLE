@@ -19,13 +19,20 @@ const tokenboundAddress = process.env.REACT_APP_TOKENBOUND_ADDRESS || "";
 const implementationAddress = process.env.REACT_APP_IMPLEMENTATION_ADDRESS || "";
 const salt = Number(process.env.REACT_APP_SALT) || 0;
 
-const provider = new ethers.providers.Web3Provider(window.ethereum);  
+const hasInjectedWallet =
+  typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
 
-const contract = new ethers.Contract(
-  tokenboundAddress as `0x${string}`,
-  tokenboundArtifact,
-  provider.getSigner()
-);
+const provider = hasInjectedWallet
+  ? new ethers.providers.Web3Provider((window as any).ethereum)
+  : null;
+
+const contract = provider
+  ? new ethers.Contract(
+      tokenboundAddress as `0x${string}`,
+      tokenboundArtifact,
+      provider.getSigner()
+    )
+  : null;
 
 interface GetAccount {
   data?: string;
@@ -37,6 +44,9 @@ export function useAccount(uploadJsonResult) {
   const { chain } = useNetwork();
 
   async function getAccount(tokenId: number, contractAddress: string): Promise<GetAccount> {
+    if (contract == null || chain == null) {
+      return { error: "failed getting account because wallet or chain is not available" };
+    }
     try {
       const response = (contract.account(implementationAddress, chain.id, contractAddress, tokenId, salt)) as string;
   
@@ -80,4 +90,3 @@ export function useBurnActivity() {
 
   return { loading, setLoading, burn, Burning  }     
 }
-

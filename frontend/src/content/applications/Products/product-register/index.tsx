@@ -1,6 +1,5 @@
 import Footer from 'src/components/Footer';
 import { Helmet } from 'react-helmet-async';
-import { ethers } from 'ethers';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import { Grid, Container } from '@mui/material';
@@ -51,8 +50,6 @@ function ProductRegister() {
   });
 
   console.log('tokenId = ', tokenId);
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum); 
 
   const handleChangeFabricant = (event) => {
     setProduct(event.target.value);

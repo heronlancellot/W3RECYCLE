@@ -14,19 +14,28 @@ const tokenboundAddress = process.env.REACT_APP_TOKENBOUND_ADDRESS;
 const implementationAddress = process.env.REACT_APP_IMPLEMENTATION_ADDRESS;
 const salt = Number(process.env.REACT_APP_SALT) || 0;
 
-const provider = new ethers.providers.Web3Provider(window.ethereum);
+const hasInjectedWallet =
+  typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
 
-const tokenBoundContract = new ethers.Contract(
-  tokenboundAddress as string,
-  tokenboundArtifact,
-  provider.getSigner()
-); 
+const provider = hasInjectedWallet
+  ? new ethers.providers.Web3Provider((window as any).ethereum)
+  : null;
 
-const implementationContract = new ethers.Contract(
-  tokenboundAddress as string,
-  implementationArtifact,
-  provider.getSigner()
-);
+const tokenBoundContract = provider
+  ? new ethers.Contract(
+      tokenboundAddress as string,
+      tokenboundArtifact,
+      provider.getSigner()
+    )
+  : null;
+
+const implementationContract = provider
+  ? new ethers.Contract(
+      tokenboundAddress as string,
+      implementationArtifact,
+      provider.getSigner()
+    )
+  : null;
 
 interface GetAccountStatus {
   data?: boolean;
@@ -34,6 +43,11 @@ interface GetAccountStatus {
 }
 
 export async function getAccountStatus(account: string): Promise<GetAccountStatus> {
+  if (implementationContract == null) {
+    return {
+      error: `failed getting account status for account: ${account}. Wallet not available.`,
+    };
+  }
   try {
     console.log("ENTROU NO GETACCOUNTSTATUS")
     const response = (implementationContract.isLocked()) as boolean;
@@ -63,6 +77,9 @@ interface GetAccount {
 
 export async function getAccount(tokenId: number, contractAddress: string): Promise<GetAccount> {
   const { chain } = useNetwork();
+  if (tokenBoundContract == null || chain == null) {
+    return { error: "failed getting account because wallet or chain is not available" };
+  }
   try {
     console.log("ENTROU NO GETACCOUNT")
     const response = (tokenBoundContract.account(implementationAddress, chain.id, contractAddress, tokenId, salt)) as string;

@@ -23,12 +23,18 @@ const ipfsGateway = process.env.REACT_APP_IPFS_GATEWAY;
 const tokenboundAddress = process.env.REACT_APP_TOKENBOUND_ADDRESS;
 const implementationAddress = process.env.REACT_APP_IMPLEMENTATION_ADDRESS;
 const salt = Number(process.env.REACT_APP_SALT) || 0;
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const contract = new ethers.Contract(
-  tokenboundAddress as string,
-  tokenboundArtifact,
-  provider.getSigner()
-); 
+const hasInjectedWallet =
+  typeof window !== "undefined" && typeof (window as any).ethereum !== "undefined";
+const provider = hasInjectedWallet
+  ? new ethers.providers.Web3Provider((window as any).ethereum)
+  : null;
+const contract = provider
+  ? new ethers.Contract(
+      tokenboundAddress as string,
+      tokenboundArtifact,
+      provider.getSigner()
+    )
+  : null;
 
 const CardActionsWrapper = styled(CardActions)(
   ({ theme }) => `
@@ -84,7 +90,7 @@ export default function DetailsNft({ data, loading, tokenId, contractAddress, si
   // Get nft's TBA account bytecode to check if account is deployed or not
   const { data: accountBytecode } = useSWR(
     hashAccount ? `/account/${hashAccount}/bytecode` : null,
-    async () => provider.getCode(hashAccount)
+    async () => (provider ? provider.getCode(hashAccount) : "0x")
   );
 
   const accountIsDeployed = accountBytecode && accountBytecode?.length > 2;
@@ -155,6 +161,9 @@ export default function DetailsNft({ data, loading, tokenId, contractAddress, si
   }, [nfts, lensNfts]);
 
   const onDployAccount = async (event: { preventDefault: () => void; }) => {
+    if (!signer) {
+      return;
+    }
     
     setHashAccount(await createAccount(
       tokenContract, // ERC-712 contract address
